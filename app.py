@@ -96,10 +96,9 @@ def process_command(command):
             response = f"Nous sommes le {now.strftime('%d %B %Y')}."
         return response
     
-    # Cas 2: Demande de météo
-    weather_match = re.search(r"météo à (\w+)", command)
+    # Cas 2: Demande de météo    weather_match = re.search(r"météo (?:à|de|pour|dans|en) ([a-zA-ZÀ-ÿ\s-]+)", command)
     if weather_match:
-        city = weather_match.group(1)
+        city = weather_match.group(1).strip()
         try:
             url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={OPENWEATHER_API_KEY}&units=metric&lang=fr"
             response = requests.get(url)
@@ -122,32 +121,134 @@ def process_command(command):
     if "qui es-tu" in command or "présente-toi" in command or "ton nom" in command:
         return "Je suis un assistant vocal personnel créé pour vous aider avec diverses tâches comme répondre à vos questions, vous donner l'heure, la météo et bien plus encore."
     
-    # Cas 4: Ouverture de sites web
-    open_commands = ["ouvre", "va sur", "lance", "démarre"]
+    # Cas 4: Ouverture de sites web    open_commands = ["ouvre", "va sur", "lance", "démarre", "navigue sur", "accède à"]
     for cmd in open_commands:
         if cmd in command:
             for site, url in WEBSITES.items():
-                if site in command:
+                if site in command.lower():
                     return {"type": "redirect", "url": url, "message": f"J'ouvre {site} pour vous."}
-    
-    # Cas 5: Recherche Wikipedia pour les questions générales
+            # Si aucun site connu n'est trouvé, mais qu'il y a une commande d'ouverture
+            unknown_site_match = re.search(f"{cmd}\\s+([a-zA-Z0-9-]+)", command)
+            if unknown_site_match:
+                site = unknown_site_match.group(1).lower()
+                return {"type": "redirect", "url": f"https://www.{site}.com", "message": f"J'ouvre {site} pour vous."}    # Cas 5: Recherche Wikipedia pour les questions générales
     try:
-        # Nettoyage de la commande pour la recherche
-        search_query = command
-        # Suppression des mots interrogatifs courants
-        for word in ["qu'est-ce que", "qui est", "qu'est ce que", "c'est quoi", "définis", "explique", "parle-moi de"]:
-            search_query = search_query.replace(word, "")
+    # Patterns de questions dynamiques
+        question_patterns = [
+            (r"(qu[i']|quel|quels?|quelles?) (?:sont|est).*?(?:droits?|lois?|règles?|législation)", "droit"),
+            (r"(qu[i']|quel|quels?|quelles?) (?:sont|est).*?(?:éthique|moral|déontologie)", "éthique"),
+            (r"(comment|quelles?) (?:sont|est).*?(?:règles?|normes?|standards?)", "normes"),
+            (r"(qu[i']|quel|quels?|quelles?) (?:sont|est).*?(?:obligations?|devoirs?)", "obligations légales"),
+            (r"(qu[i']|quel|quels?|quelles?) (?:est|sont).*?(?:président|ministre|gouvernement)", "politique"),
+            (r"(?:parle|dis).*?(?:moi|nous).*?(de|sur|à propos)", "information générale"),
+            (r"(?:c'est|qu'est[- ]ce que|qu'est ce qu).*?((?:[a-zA-Z]+))", "définition"),
+            (r"(?:explique|définis).*?((?:[a-zA-Z]+))", "explication")
+        ]
         
-        search_query = search_query.strip()
-        if len(search_query) > 3:  # Éviter les recherches trop courtes
+        # Questions spécifiques pré-formatées pour certains sujets importants
+        specific_queries = {
+            "président": {
+                "pattern": r"(qui|quel) est le président (de la )?république( française)?( actuel)?",
+                "query": "Président de la République française actuel"
+            },
+            "premier ministre": {
+                "pattern": r"(qui|quel) est le premier ministre( français)?( actuel)?",
+                "query": "Premier ministre français actuel"
+            },
+            "gouvernement": {
+                "pattern": r"(qui|quels?) (est|sont) les? membres? du gouvernement( français)?( actuel)?",
+                "query": "Gouvernement français actuel"
+            }
+        }
+
+        # Vérifier les questions spécifiques d'abord
+        for key, info in specific_queries.items():
+            if re.search(info["pattern"], command, re.IGNORECASE):
+                search_query = info["query"]
+                break
+        else:        # Si aucune question spécifique ne correspond, analyser le type de question
+        search_query = command
+        question_type = None
+        extracted_subject = None
+
+        # Détecter le type de question et extraire le sujet
+        for pattern, q_type in question_patterns:
+            match = re.search(pattern, command, re.IGNORECASE)
+            if match:
+                question_type = q_type
+                # Tenter d'extraire le sujet principal
+                if len(match.groups()) > 0:
+                    extracted_subject = match.group(1)
+                break
+
+        # Liste dynamique de mots à supprimer basée sur le type de question
+        words_to_remove = {
+            "mots_interrogatifs": [
+                "qu'est-ce que", "qui est", "qu'est ce que", "c'est quoi",
+                "définis", "explique", "parle-moi de", "dis-moi qui est",
+                "peux-tu me dire", "je veux savoir", "peux-tu m'expliquer",
+                "qu'est ce qu'", "c'est", "qu'est", "que", "quoi", "qui"
+            ],
+            "articles": ["le", "la", "les", "du", "de", "des", "un", "une"],
+            "verbes_communs": ["être", "avoir", "faire", "dire", "aller", "voir", "savoir", "pouvoir"],
+            "prepositions": ["à", "dans", "par", "pour", "en", "vers", "avec", "sans", "sous", "sur"]
+        }
+          # Nettoyage intelligent basé sur le type de question
+        for category, words in words_to_remove.items():
+            if question_type != "définition" or category != "articles":  # Garder les articles pour les définitions
+                for word in words:
+                    search_query = re.sub(r'\b' + re.escape(word) + r'\b', '', search_query, flags=re.IGNORECASE)
+        
+        # Enrichissement de la recherche selon le type de question
+        if question_type:
+            if question_type == "droit":
+                search_query += " législation droit loi"
+            elif question_type == "éthique":
+                search_query += " éthique morale principes"
+            elif question_type == "politique":
+                search_query += " politique actuel"
+            elif question_type == "définition":
+                search_query = f"définition {extracted_subject if extracted_subject else search_query}"
+          search_query = search_query.strip()
+        if len(search_query) > 2:  # Réduire la limite minimale pour les recherches courtes mais pertinentes
             try:
-                # Recherche des pages correspondantes
-                search_results = wikipedia.search(search_query, results=1)
+                # Recherche avec mots-clés spécifiques pour les frameworks/technologies
+                if re.search(r"(framework|technologie|langage|programmation|développement|logiciel)", command, re.IGNORECASE):
+                    search_query = search_query + " (informatique)"
+                elif re.search(r"(outil|application|app|software)", command, re.IGNORECASE):
+                    search_query = search_query + " (logiciel)"
+                  # Recherche des pages correspondantes avec un contexte enrichi
+                search_results = wikipedia.search(search_query, results=5)  # Augmenté à 5 résultats
                 if search_results:
-                    # Obtention du résumé de la première page trouvée
-                    page = wikipedia.page(search_results[0])
-                    summary = wikipedia.summary(search_results[0], sentences=2)
-                    return summary
+                    best_summary = None
+                    max_relevance = 0
+                    
+                    for result in search_results:
+                        try:
+                            page = wikipedia.page(result)
+                            summary = wikipedia.summary(result, sentences=4)  # Augmenté à 4 phrases
+                            
+                            # Calcul de la pertinence
+                            relevance = 0
+                            if question_type:
+                                if question_type in page.content.lower():
+                                    relevance += 2
+                                if extracted_subject and extracted_subject.lower() in page.content.lower():
+                                    relevance += 3
+                            
+                            # Vérifier la longueur et la qualité du résumé
+                            if len(summary) > 50 and summary.count('.') >= 2:
+                                relevance += 1
+                            
+                            if relevance > max_relevance:
+                                max_relevance = relevance
+                                best_summary = summary
+                            
+                            if max_relevance >= 4:  # Seuil de pertinence élevé atteint
+                                break
+                                
+                    if best_summary:
+                        return best_summary
             except wikipedia.exceptions.DisambiguationError as e:
                 # En cas d'ambiguïté, prendre la première suggestion
                 try:
