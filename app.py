@@ -138,14 +138,14 @@ def process_command(command):
     try:
     # Patterns de questions dynamiques
         question_patterns = [
-            (r"(qu[i']|quel|quels?|quelles?) (?:sont|est).*?(?:droits?|lois?|règles?|législation)", "droit"),
-            (r"(qu[i']|quel|quels?|quelles?) (?:sont|est).*?(?:éthique|moral|déontologie)", "éthique"),
-            (r"(comment|quelles?) (?:sont|est).*?(?:règles?|normes?|standards?)", "normes"),
-            (r"(qu[i']|quel|quels?|quelles?) (?:sont|est).*?(?:obligations?|devoirs?)", "obligations légales"),
-            (r"(qu[i']|quel|quels?|quelles?) (?:est|sont).*?(?:président|ministre|gouvernement)", "politique"),
-            (r"(?:parle|dis).*?(?:moi|nous).*?(de|sur|à propos)", "information générale"),
-            (r"(?:c'est|qu'est[- ]ce que|qu'est ce qu).*?((?:[a-zA-Z]+))", "définition"),
-            (r"(?:explique|définis).*?((?:[a-zA-Z]+))", "explication")
+            (r"(?:quels?|quelles?) sont (?:les? |mes? )?(?:droits?)(?: des? )?(\w+)?", "droit"),
+            (r"(?:quels?|quelles?) sont (?:les? |mes? )?(?:lois?|règles?|législations?)(?: des? )?(\w+)?", "législation"),
+            (r"(?:quels?|quelles?) sont (?:les? )?(?:obligations?|devoirs?)(?: des? )?(\w+)?", "obligation"),
+            (r"(?:qu[i']|quel|quels?|quelles?) (?:sont|est) (?:les?|la|le)? ?(?:président|ministre|gouvernement)", "politique"),
+            (r"(?:c'est quoi|qu'est[- ]ce que|explique[- ]moi) (?:les?|la|le)? ?(\w+)", "définition"),
+            (r"(?:parle|dis)[- ]moi (?:de|des?|du) (\w+)", "information"),
+            (r"comment (?:fonctionne|marche|utiliser?) (?:les?|la|le)? ?(\w+)", "fonctionnement"),
+            (r"(?:quelles?|comment) (?:sont|est) (?:les?|la|le)? ?(\w+)", "description")
         ]
         
         # Questions spécifiques pré-formatées pour certains sujets importants
@@ -195,23 +195,43 @@ def process_command(command):
             "articles": ["le", "la", "les", "du", "de", "des", "un", "une"],
             "verbes_communs": ["être", "avoir", "faire", "dire", "aller", "voir", "savoir", "pouvoir"],
             "prepositions": ["à", "dans", "par", "pour", "en", "vers", "avec", "sans", "sous", "sur"]
-        }
-          # Nettoyage intelligent basé sur le type de question
-        for category, words in words_to_remove.items():
-            if question_type != "définition" or category != "articles":  # Garder les articles pour les définitions
-                for word in words:
-                    search_query = re.sub(r'\b' + re.escape(word) + r'\b', '', search_query, flags=re.IGNORECASE)
-        
-        # Enrichissement de la recherche selon le type de question
+        }        # Construction de la requête de recherche en fonction du type de question
         if question_type:
+            base_query = ""
+            
+            # Extraire le sujet principal si présent
+            if extracted_subject:
+                base_query = extracted_subject
+            else:
+                # Nettoyer la commande pour extraire le sujet
+                cleaned_command = command
+                for category, words in words_to_remove.items():
+                    for word in words:
+                        cleaned_command = re.sub(r'\b' + re.escape(word) + r'\b', '', cleaned_command, flags=re.IGNORECASE)
+                base_query = cleaned_command.strip()
+
+            # Enrichir la requête selon le type de question
             if question_type == "droit":
-                search_query += " législation droit loi"
-            elif question_type == "éthique":
-                search_query += " éthique morale principes"
+                search_query = f"droits {base_query} législation protection"
+            elif question_type == "législation":
+                search_query = f"loi législation {base_query} réglementation"
+            elif question_type == "obligation":
+                search_query = f"obligations légales {base_query}"
             elif question_type == "politique":
-                search_query += " politique actuel"
+                search_query = f"{base_query} politique actuel France"
             elif question_type == "définition":
-                search_query = f"définition {extracted_subject if extracted_subject else search_query}"
+                search_query = f"{base_query} définition"
+            elif question_type == "information":
+                search_query = base_query
+            elif question_type == "fonctionnement":
+                search_query = f"fonctionnement {base_query} comment utiliser"
+            elif question_type == "description":
+                search_query = f"{base_query} caractéristiques description"
+            else:
+                search_query = base_query
+
+            # Nettoyage final
+            search_query = re.sub(r'\s+', ' ', search_query).strip()
         search_query = search_query.strip()
         if len(search_query) > 2:  # Réduire la limite minimale pour les recherches courtes mais pertinentes
             try:
@@ -219,25 +239,39 @@ def process_command(command):
                 if re.search(r"(framework|technologie|langage|programmation|développement|logiciel)", command, re.IGNORECASE):
                     search_query = search_query + " (informatique)"
                 elif re.search(r"(outil|application|app|software)", command, re.IGNORECASE):
-                    search_query = search_query + " (logiciel)"
-                  # Recherche des pages correspondantes avec un contexte enrichi
-                search_results = wikipedia.search(search_query, results=5)  # Augmenté à 5 résultats
+                    search_query = search_query + " (logiciel)"                
+                    print(f"Recherche Wikipedia pour: {search_query}")  # Debug
+                search_results = wikipedia.search(search_query, results=5)
                 if search_results:
                     best_summary = None
                     max_relevance = 0
                     
                     for result in search_results:
                         try:
-                            page = wikipedia.page(result)
-                            summary = wikipedia.summary(result, sentences=4)  # Augmenté à 4 phrases
+                            page = wikipedia.page(result, auto_suggest=False)
+                            summary = wikipedia.summary(result, sentences=4)
                             
-                            # Calcul de la pertinence
+                            # Calcul amélioré de la pertinence
                             relevance = 0
-                            if question_type:
-                                if question_type in page.content.lower():
-                                    relevance += 2
-                                if extracted_subject and extracted_subject.lower() in page.content.lower():
+                            search_terms = search_query.lower().split()
+                            content_lower = page.content.lower()
+                            title_lower = page.title.lower()
+                            
+                            # Points pour les correspondances dans le titre
+                            for term in search_terms:
+                                if term in title_lower:
                                     relevance += 3
+                            
+                            # Points pour les correspondances dans le contenu
+                            for term in search_terms:
+                                if term in content_lower:
+                                    relevance += 1
+                            
+                            # Bonus pour les types de questions spécifiques
+                            if question_type in ["droit", "législation", "obligation"]:
+                                legal_terms = ["droit", "loi", "législation", "réglementation", "code", "juridique"]
+                                if any(term in content_lower for term in legal_terms):
+                                    relevance += 5
                             
                             # Vérifier la longueur et la qualité du résumé
                             if len(summary) > 50 and summary.count('.') >= 2:
