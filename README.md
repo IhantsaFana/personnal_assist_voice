@@ -23,7 +23,7 @@ Un assistant vocal web capable de comprendre et d'exécuter des commandes vocale
 
 1. Clonez le dépôt :
 ```bash
-git clone [url-du-repo]
+git clone https://github.com/IhantsaFana/personnal_assist_voice.git
 cd personnal_assist_voice
 ```
 
