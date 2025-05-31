@@ -6,8 +6,13 @@ import re
 import requests
 import wikipedia
 import webbrowser
+import os
+from dotenv import load_dotenv
 
 app = Flask(__name__)
+
+# Charger les variables d'environnement depuis le fichier .env
+load_dotenv()
 
 # Configuration de Wikipedia en français
 wikipedia.set_lang("fr")
@@ -23,6 +28,9 @@ WEBSITES = {
     "amazon": "https://www.amazon.com",
     "netflix": "https://www.netflix.com",
 }
+
+# Clé API OpenWeatherMap
+OPENWEATHER_API_KEY = os.getenv('OPENWEATHER_API_KEY')
 
 @app.route('/')
 def index():
@@ -92,9 +100,8 @@ def process_command(command):
     weather_match = re.search(r"météo à (\w+)", command)
     if weather_match:
         city = weather_match.group(1)
-        try:            # Clé API OpenWeatherMap
-            api_key = "10f438bc6cd8d16a93dcbfbe9a1b5717"
-            url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric&lang=fr"
+        try:
+            url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={OPENWEATHER_API_KEY}&units=metric&lang=fr"
             response = requests.get(url)
             data = response.json()
             
@@ -197,4 +204,5 @@ def process_audio():
         }), 500
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
