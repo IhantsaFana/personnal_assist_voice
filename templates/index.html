@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assistant vocal personnel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+        }
+        .container {
+            margin-top: 30px;
+        }
+        .text-box {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            min-height: 50px;
+        }
+        #userCommand {
+            background-color: #f5f5f5;
+        }
+        #assistantResponse {
+            background-color: #e6f7ff;
+        }
+        #speakButton {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 20px 0;
+            cursor: pointer;
+            border-radius: 50px;
+            transition: background-color 0.3s;
+        }
+        #speakButton:hover {
+            background-color: #45a049;
+        }
+        #speakButton:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .status {
+            font-style: italic;
+            color: #666;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Assistant vocal personnel</h1>
+    
+    <div class="container">
+        <button id="speakButton">Parler</button>
+        <p id="status" class="status">Cliquez sur "Parler" pour commencer</p>
+        
+        <h3>Votre commande :</h3>
+        <div id="userCommand" class="text-box"></div>
+        
+        <h3>Réponse de l'assistant :</h3>
+        <div id="assistantResponse" class="text-box"></div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
