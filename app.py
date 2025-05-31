@@ -96,7 +96,8 @@ def process_command(command):
             response = f"Nous sommes le {now.strftime('%d %B %Y')}."
         return response
     
-    # Cas 2: Demande de météo    weather_match = re.search(r"météo (?:à|de|pour|dans|en) ([a-zA-ZÀ-ÿ\s-]+)", command)
+    # Cas 2: Demande de météo
+    weather_match = re.search(r"météo (?:à|de|pour|dans|en) ([a-zA-ZÀ-ÿ\s-]+)", command)
     if weather_match:
         city = weather_match.group(1).strip()
         try:
@@ -121,7 +122,8 @@ def process_command(command):
     if "qui es-tu" in command or "présente-toi" in command or "ton nom" in command:
         return "Je suis un assistant vocal personnel créé pour vous aider avec diverses tâches comme répondre à vos questions, vous donner l'heure, la météo et bien plus encore."
     
-    # Cas 4: Ouverture de sites web    open_commands = ["ouvre", "va sur", "lance", "démarre", "navigue sur", "accède à"]
+    # Cas 4: Ouverture de sites web
+    open_commands = ["ouvre", "va sur", "lance", "démarre", "navigue sur", "accède à"]
     for cmd in open_commands:
         if cmd in command:
             for site, url in WEBSITES.items():
@@ -131,7 +133,8 @@ def process_command(command):
             unknown_site_match = re.search(f"{cmd}\\s+([a-zA-Z0-9-]+)", command)
             if unknown_site_match:
                 site = unknown_site_match.group(1).lower()
-                return {"type": "redirect", "url": f"https://www.{site}.com", "message": f"J'ouvre {site} pour vous."}    # Cas 5: Recherche Wikipedia pour les questions générales
+                return {"type": "redirect", "url": f"https://www.{site}.com", "message": f"J'ouvre {site} pour vous."}
+    # Cas 5: Recherche Wikipedia pour les questions générales
     try:
     # Patterns de questions dynamiques
         question_patterns = [
@@ -167,7 +170,7 @@ def process_command(command):
                 search_query = info["query"]
                 break
         else:        # Si aucune question spécifique ne correspond, analyser le type de question
-        search_query = command
+            search_query = command
         question_type = None
         extracted_subject = None
 
@@ -209,7 +212,7 @@ def process_command(command):
                 search_query += " politique actuel"
             elif question_type == "définition":
                 search_query = f"définition {extracted_subject if extracted_subject else search_query}"
-          search_query = search_query.strip()
+        search_query = search_query.strip()
         if len(search_query) > 2:  # Réduire la limite minimale pour les recherches courtes mais pertinentes
             try:
                 # Recherche avec mots-clés spécifiques pour les frameworks/technologies
@@ -246,6 +249,9 @@ def process_command(command):
                             
                             if max_relevance >= 4:  # Seuil de pertinence élevé atteint
                                 break
+                        except Exception as e:
+                            print(f"Erreur lors de la récupération de la page Wikipedia: {e}")
+                            continue
                                 
                     if best_summary:
                         return best_summary
