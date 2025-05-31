@@ -65,6 +65,13 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.success) {
                 assistantResponseElement.textContent = data.text;
                 statusElement.textContent = 'Commande traitée avec succès';
+                
+                // Gestion de la redirection si nécessaire
+                if (data.redirect) {
+                    setTimeout(() => {
+                        window.open(data.redirect, '_blank');
+                    }, 1000); // Attendre 1 seconde pour que l'utilisateur entende la réponse vocale
+                }
             } else {
                 assistantResponseElement.textContent = data.error || 'Une erreur est survenue';
                 statusElement.textContent = 'Erreur lors du traitement de la commande';

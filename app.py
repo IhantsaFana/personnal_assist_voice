@@ -1,15 +1,28 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, redirect
 import speech_recognition as sr
 import pyttsx3
 import datetime
 import re
 import requests
 import wikipedia
+import webbrowser
 
 app = Flask(__name__)
 
 # Configuration de Wikipedia en français
 wikipedia.set_lang("fr")
+
+# Dictionnaire des sites web courants
+WEBSITES = {
+    "youtube": "https://www.youtube.com",
+    "google": "https://www.google.com",
+    "facebook": "https://www.facebook.com",
+    "twitter": "https://www.twitter.com",
+    "linkedin": "https://www.linkedin.com",
+    "github": "https://www.github.com",
+    "amazon": "https://www.amazon.com",
+    "netflix": "https://www.netflix.com",
+}
 
 @app.route('/')
 def index():
@@ -79,9 +92,8 @@ def process_command(command):
     weather_match = re.search(r"météo à (\w+)", command)
     if weather_match:
         city = weather_match.group(1)
-        try:
-            # Clé API gratuite d'OpenWeatherMap (à remplacer par votre propre clé)
-            api_key = "votre_clé_api_openweathermap"
+        try:            # Clé API OpenWeatherMap
+            api_key = "10f438bc6cd8d16a93dcbfbe9a1b5717"
             url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric&lang=fr"
             response = requests.get(url)
             data = response.json()
@@ -103,7 +115,15 @@ def process_command(command):
     if "qui es-tu" in command or "présente-toi" in command or "ton nom" in command:
         return "Je suis un assistant vocal personnel créé pour vous aider avec diverses tâches comme répondre à vos questions, vous donner l'heure, la météo et bien plus encore."
     
-    # Cas 4: Recherche Wikipedia pour les questions générales
+    # Cas 4: Ouverture de sites web
+    open_commands = ["ouvre", "va sur", "lance", "démarre"]
+    for cmd in open_commands:
+        if cmd in command:
+            for site, url in WEBSITES.items():
+                if site in command:
+                    return {"type": "redirect", "url": url, "message": f"J'ouvre {site} pour vous."}
+    
+    # Cas 5: Recherche Wikipedia pour les questions générales
     try:
         # Nettoyage de la commande pour la recherche
         search_query = command
@@ -140,35 +160,41 @@ def process_command(command):
 
 @app.route('/process_audio', methods=['POST'])
 def process_audio():
-    if request.method == 'POST':
-        # Si la requête contient un fichier audio
-        if 'audio' in request.files:
-            audio_file = request.files['audio']
-            # Traitement du fichier audio (à implémenter)
-            response_text = "Traitement audio simulé"
-            speak(response_text)
-            return jsonify({"success": True, "text": response_text})
-        # Si la requête contient du texte
-        elif request.json and 'text' in request.json:
-            text = request.json['text']
-            # Traitement intelligent du texte avec process_command
-            response_text = process_command(text)
-            speak(response_text)
-            return jsonify({"success": True, "text": response_text})
-        # Si on veut utiliser le microphone directement
-        elif request.json and request.json.get('use_microphone', False):
-            text = recognize_speech()
-            if text:
-                # Traitement intelligent du texte reconnu
-                response_text = process_command(text)
+    try:
+        if request.method == 'POST':
+            # Si la requête contient un fichier audio
+            if 'audio' in request.files:
+                audio_file = request.files['audio']
+                # Traitement du fichier audio (à implémenter)
+                response_text = "Traitement audio simulé"
                 speak(response_text)
-                return jsonify({"success": True, "text": text, "response": response_text})
+                return jsonify({"success": True, "text": response_text})
+            # Si la requête contient du texte
+            elif request.json and 'text' in request.json:
+                text = request.json['text']
+                # Traitement intelligent du texte avec process_command
+                response = process_command(text)
+                
+                # Vérifier si la réponse est une redirection
+                if isinstance(response, dict) and response.get('type') == 'redirect':
+                    speak(response['message'])
+                    return jsonify({
+                        "success": True,
+                        "text": response['message'],
+                        "redirect": response['url']
+                    })
+                
+                # Réponse normale
+                speak(response)
+                return jsonify({"success": True, "text": response})
             else:
-                response_text = "Je n'ai pas pu comprendre ce que vous avez dit."
-                speak(response_text)
-                return jsonify({"success": False, "error": response_text})
-        else:
-            return jsonify({"success": False, "error": "Aucune donnée audio ou texte fournie"})
+                return jsonify({"success": False, "error": "Aucune donnée audio ou texte fournie"})
+    except Exception as e:
+        print(f"Erreur serveur: {str(e)}")
+        return jsonify({
+            "success": False,
+            "error": "Une erreur est survenue lors du traitement de votre demande"
+        }), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
