@@ -1,80 +1,76 @@
 <!DOCTYPE html>
 <html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Assistant vocal personnel</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            text-align: center;
-        }
-        h1 {
-            color: #333;
-        }
-        .container {
-            margin-top: 30px;
-        }
-        .text-box {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            min-height: 50px;
-        }
-        #userCommand {
-            background-color: #f5f5f5;
-        }
-        #assistantResponse {
-            background-color: #e6f7ff;
-        }
-        #speakButton {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            margin: 20px 0;
-            cursor: pointer;
-            border-radius: 50px;
-            transition: background-color 0.3s;
-        }
-        #speakButton:hover {
-            background-color: #45a049;
-        }
-        #speakButton:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-        }
-        .status {
-            font-style: italic;
-            color: #666;
-            margin: 10px 0;
-        }
-    </style>
-</head>
-<body>
-    <h1>Assistant vocal personnel</h1>
-    
-    <div class="container">
-        <button id="speakButton">Parler</button>
-        <p id="status" class="status">Cliquez sur "Parler" pour commencer</p>
-        
-        <h3>Votre commande :</h3>
-        <div id="userCommand" class="text-box"></div>
-        
-        <h3>Réponse de l'assistant :</h3>
-        <div id="assistantResponse" class="text-box"></div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Assistant Vocal Personnel</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../static/css/styles.css" />
+  </head>
+  <body>
+    <div class="background-pattern"></div>
+    <div class="floating-shapes" id="floatingShapes"></div>
+
+    <div class="app-container">
+      <div class="header">
+        <div class="copilot-logo">
+          <i class="fas fa-brain"></i>
+        </div>
+        <h1 class="app-title">Assistant Vocal</h1>
+        <p class="app-subtitle">Votre copilote intelligent personnel</p>
+      </div>
+
+      <div class="voice-section">
+        <div class="mic-container">
+          <button id="speakButton" class="speak-button">
+            <i class="fas fa-microphone" id="micIcon"></i>
+          </button>
+          <div class="pulse-rings" id="pulseRings" style="display: none">
+            <div class="pulse-ring"></div>
+            <div class="pulse-ring"></div>
+            <div class="pulse-ring"></div>
+          </div>
+          <div class="copilot-sparkle" style="top: 10px; right: 10px">✨</div>
+          <div
+            class="copilot-sparkle"
+            style="bottom: 20px; left: 5px; animation-delay: 1s"
+          >
+            ⭐
+          </div>
+        </div>
+
+        <div id="statusIndicator" class="status-indicator">
+          <i class="fas fa-info-circle"></i>
+          <span>Cliquez sur le microphone pour démarrer</span>
+        </div>
+      </div>
+
+      <div class="conversation-area">
+        <div id="userMessage" class="message-bubble user-bubble">
+          <div class="message-header">
+            <div class="message-avatar user-avatar">
+              <i class="fas fa-user"></i>
+            </div>
+            <span>Vous</span>
+          </div>
+          <div id="userCommand" class="message-content"></div>
+        </div>
+
+        <div id="assistantMessage" class="message-bubble assistant-bubble">
+          <div class="message-header">
+            <div class="message-avatar assistant-avatar">
+              <i class="fas fa-robot"></i>
+            </div>
+            <span>Copilote</span>
+          </div>
+          <div id="assistantResponse" class="message-content"></div>
+        </div>
+      </div>
     </div>
-    
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
-</body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
+    <script src="../static/js/uiux.js"></script>
+  </body>
 </html>
