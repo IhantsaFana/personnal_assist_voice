@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: mon-app
+    name: assistantbiblique
     runtime: python
     plan: free
     buildCommand: ./build.sh
