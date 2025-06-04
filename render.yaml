@@ -3,14 +3,24 @@ services:
     name: assistantbiblique
     runtime: python
     plan: free
-    buildCommand: ./build.sh
-    startCommand: python main.py
+    buildCommand: chmod +x build.sh && ./build.sh
+    startCommand: gunicorn -c gunicorn.conf.py main:app
     envVars:
       - key: PYTHON_VERSION
         value: 3.11
+      - key: GEMINI_API_KEY
+        sync: false
     buildFilter:
       paths:
         - requirements.txt
         - build.sh
         - main.py
+        - app.py
+        - bible_chat.py
+        - gunicorn.conf.py
+        - static/**
+        - templates/**
     autoDeploy: true
+    healthCheckPath: /
+    domains:
+      - assistant-biblique.onrender.com
