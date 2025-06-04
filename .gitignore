@@ -1,1 +1,34 @@
 venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+*.log
+*.env
+*.DS_Store
+*.egg-info
+*.coverage
+dist
+build
+.eggs
+*.egg
+*.whl
+*.mypy_cache
+# Pytest cache
+.cache
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+# PyCharm project files
+.idea
+# VS Code settings
+.vscode
+# Local configuration files
+*.local
+# Temporary files
+*.tmp
+# Backup files
+*.bak
+# System files
+.DS_Store
