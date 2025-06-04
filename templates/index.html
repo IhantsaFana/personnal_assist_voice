@@ -3,7 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Assistant Vocal Personnel</title>
+    <title>Assistant Biblique - Votre Guide Spirituel</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap"
+      rel="stylesheet"
+    />
     <link
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
       rel="stylesheet"
@@ -17,10 +21,14 @@
     <div class="app-container">
       <div class="header">
         <div class="copilot-logo">
-          <i class="fas fa-brain"></i>
+          <i class="fas fa-bible"></i>
         </div>
-        <h1 class="app-title">Assistant Vocal</h1>
-        <p class="app-subtitle">Votre copilote intelligent personnel</p>
+        <h1 class="app-title">Assistant Biblique</h1>
+        <p class="app-subtitle">Votre guide spirituel personnel</p>
+        <p class="app-verse">
+          "Ta parole est une lampe à mes pieds et une lumière sur mon sentier."
+          - Psaume 119:105
+        </p>
       </div>
 
       <div class="voice-section">
@@ -41,10 +49,9 @@
             ⭐
           </div>
         </div>
-
         <div id="statusIndicator" class="status-indicator">
-          <i class="fas fa-info-circle"></i>
-          <span>Cliquez sur le microphone pour démarrer</span>
+          <i class="fas fa-bible"></i>
+          <span>Posez une question sur la Bible ou la foi chrétienne</span>
         </div>
       </div>
 
@@ -52,9 +59,9 @@
         <div id="userMessage" class="message-bubble user-bubble">
           <div class="message-header">
             <div class="message-avatar user-avatar">
-              <i class="fas fa-user"></i>
+              <i class="fas fa-pray"></i>
             </div>
-            <span>Vous</span>
+            <span>Question</span>
           </div>
           <div id="userCommand" class="message-content"></div>
         </div>
@@ -62,9 +69,9 @@
         <div id="assistantMessage" class="message-bubble assistant-bubble">
           <div class="message-header">
             <div class="message-avatar assistant-avatar">
-              <i class="fas fa-robot"></i>
+              <i class="fas fa-church"></i>
             </div>
-            <span>Copilote</span>
+            <span>Réponse biblique</span>
           </div>
           <div id="assistantResponse" class="message-content"></div>
         </div>

@@ -4,15 +4,15 @@
   box-sizing: border-box;
 }
 :root {
-  --copilot-primary: #0078d4;
-  --copilot-secondary: #106ebe;
-  --copilot-accent: #40e0d0;
-  --copilot-purple: #8b5cf6;
+  --copilot-primary: #8b4513; /* Warm brown for spiritual/biblical theme */
+  --copilot-secondary: #cd853f;
+  --copilot-accent: #daa520; /* Golden accent for divine inspiration */
+  --copilot-purple: #4b0082; /* Deep purple for wisdom */
   --copilot-gradient: linear-gradient(
     135deg,
-    #0078d4 0%,
-    #40e0d0 50%,
-    #8b5cf6 100%
+    #8b4513 0%,
+    #daa520 50%,
+    #4b0082 100%
   );
   --copilot-dark: #1e1e1e;
   --copilot-surface: #ffffff;
@@ -28,9 +28,9 @@
   --shadow-strong: 0 8px 32px rgba(0, 0, 0, 0.15);
 }
 body {
-  font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, system-ui,
-    sans-serif;
-  background: #f3f2f1;
+  font-family: "Crimson Text", "Segoe UI", -apple-system, BlinkMacSystemFont,
+    system-ui, serif; /* Serif font for biblical feel */
+  background: #f5f5dc; /* Beige background for parchment-like feel */
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -38,6 +38,8 @@ body {
   padding: 20px;
   color: var(--copilot-text);
   overflow-x: hidden;
+  background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 50L50 0L0 0L0 100L100 100L100 0L50 0' fill='none' stroke='%23DAA520' stroke-width='0.2'/%3E%3C/svg%3E");
+  background-size: 20px 20px;
 }
 .background-pattern {
   position: fixed;
@@ -144,7 +146,7 @@ body {
   font-size: 2.5rem;
   color: white;
   box-shadow: var(--shadow-medium);
-  animation: logo-glow 3s ease-in-out infinite;
+  animation: divine-glow 3s infinite alternate;
 }
 @keyframes logo-glow {
   0%,
@@ -270,7 +272,8 @@ body {
   padding: 8px 16px;
   border-radius: 20px;
   background: var(--copilot-surface-alt);
-  border: 1px solid var(--copilot-border);
+  border: 2px solid var(--copilot-accent);
+  color: var(--copilot-primary);
   transition: all 0.3s ease;
 }
 .status-indicator.listening {
@@ -300,7 +303,8 @@ body {
   transition: all 0.3s ease;
   opacity: 0;
   transform: translateY(20px);
-  border: 1px solid var(--copilot-border);
+  border: 2px solid var(--copilot-accent);
+  background-color: rgba(255, 255, 255, 0.95);
 }
 .message-bubble.show {
   opacity: 1;
@@ -315,6 +319,7 @@ body {
   color: white;
   margin-left: 40px;
   position: relative;
+  border: 2px solid var(--copilot-accent);
 }
 .user-bubble::before {
   content: "";
@@ -328,11 +333,11 @@ body {
   border-right: 10px solid var(--copilot-primary);
 }
 .assistant-bubble {
-  background: var(--copilot-surface);
+  background: linear-gradient(135deg, #f5f5dc, #fff);
   color: var(--copilot-text);
   margin-right: 40px;
   position: relative;
-  border: 1px solid var(--copilot-border);
+  border: 2px solid var(--copilot-accent);
 }
 .assistant-bubble::before {
   content: "";
@@ -423,6 +428,15 @@ body {
   50% {
     opacity: 1;
     transform: scale(1) rotate(180deg);
+  }
+}
+@keyframes divine-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 15px var(--copilot-accent);
+  }
+  50% {
+    box-shadow: 0 0 30px var(--copilot-accent);
   }
 }
 @media (max-width: 640px) {

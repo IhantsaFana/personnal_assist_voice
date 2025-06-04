@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Vérifier si la reconnaissance vocale est supportée
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-        updateStatus('error', 'fas fa-exclamation-triangle', 'Reconnaissance vocale non supportée');
+        updateStatus('error', 'fas fa-exclamation-triangle', 'La reconnaissance vocale n\'est pas supportée par votre navigateur');
         speakButton.disabled = true;
         return;
     }

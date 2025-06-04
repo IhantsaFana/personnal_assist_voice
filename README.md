@@ -1,81 +1,132 @@
-# Assistant Vocal Personnel
+# Assistant Vocal Biblique
 
-Un assistant vocal web capable de comprendre et d'exécuter des commandes vocales en français.
+Un assistant vocal intelligent spécialisé dans l'enseignement de la Bible et la théologie chrétienne. Utilise l'API Gemini pour des réponses contextuelles et pertinentes sur les questions bibliques et spirituelles.
 
 ## Fonctionnalités
 
-- Reconnaissance vocale en français
-- Synthèse vocale pour les réponses
-- Commandes disponibles :
-  - Météo (ex: "Quelle est la météo à Paris ?")
-  - Définitions Wikipedia (ex: "C'est quoi l'intelligence artificielle ?")
-  - Date et heure (ex: "Quel jour sommes-nous ?", "Quelle heure est-il ?")
-  - Ouverture de sites web (ex: "Ouvre YouTube")
+- Interface vocale en français
+- Réponses basées sur la Bible et la théologie
+- Synthèse vocale des réponses
+- Conversation naturelle et contextualisée
+- Citations bibliques pertinentes
+- Interface utilisateur inspirée des parchemins bibliques
+- Exemples de questions :
+  - "Pouvez-vous m'expliquer la parabole du fils prodigue ?"
+  - "Que dit la Bible sur le pardon ?"
+  - "Expliquez-moi l'importance de la prière"
+  - "Quel est le message principal de l'évangile ?"
 
 ## Prérequis
 
-- Python 3.7 ou supérieur
+- Python 3.8 ou supérieur
 - Un navigateur web moderne supportant l'API Web Speech
-- Une connexion Internet
-- Windows (pour pyttsx3)
+- `espeak` pour la synthèse vocale sur Linux
+- Une clé API Gemini valide
 
-## Installation
+## Installation sur Linux
 
-1. Clonez le dépôt :
+1. Installation des dépendances système :
+
 ```bash
-git clone https://github.com/IhantsaFana/personnal_assist_voice.git
-cd personnal_assist_voice
+sudo apt-get update
+sudo apt-get install python3-pip python3-venv espeak
 ```
 
-2. Créez un environnement virtuel et activez-le :
-```bash
-python -m venv venv
-.\venv\Scripts\Activate
-```
+2. Configuration de l'environnement Python :
 
-3. Installez les dépendances :
 ```bash
+python3 -m venv venv
+source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## Configuration
+3. Configuration des variables d'environnement :
 
-La clé API OpenWeatherMap est déjà configurée dans le fichier `app.py`.
+```bash
+cp .env.example .env
+# Éditer .env et ajouter votre clé API Gemini
+```
 
-## Utilisation
+## Démarrage
 
-1. Démarrez le serveur Flask :
+1. Activer l'environnement virtuel :
+
+```bash
+source venv/bin/activate
+```
+
+2. Lancer l'application :
+
 ```bash
 python app.py
 ```
 
-2. Ouvrez votre navigateur et accédez à :
+3. Ouvrir dans le navigateur : http://localhost:5000
+
+## Utilisation de l'API
+
+### Exemple d'intégration Python
+
+```python
+from bible_chat import initialize_chat, get_bible_response
+
+# Initialiser le chat
+chat = initialize_chat()
+
+# Poser une question
+response = get_bible_response("Que dit la Bible sur l'amour ?", chat)
+print(response)
 ```
-http://localhost:5000
+
+### Exemple d'appel API REST
+
+```bash
+curl -X POST http://localhost:5000/process_audio \
+  -H "Content-Type: application/json" \
+  -d '{"text":"Que dit la Bible sur la foi ?"}'
 ```
 
-3. Cliquez sur le bouton "Parler" et énoncez votre commande.
+## Tests
 
-## Dépannage
+Pour exécuter les tests unitaires :
 
-### Problèmes courants :
+```bash
+# Activer l'environnement virtuel
+source venv/bin/activate
 
-1. Si la reconnaissance vocale ne fonctionne pas :
-   - Vérifiez que votre navigateur est à jour
-   - Assurez-vous d'avoir autorisé l'accès au microphone
+# Exécuter les tests
+venv/bin/python -m unittest test_bible_assistant.py
+venv/bin/python -m unittest test_voice_integration.py
+```
 
-2. Si la synthèse vocale ne fonctionne pas :
-   - Vérifiez que pyttsx3 est correctement installé
-   - Sur Windows, vérifiez que les voix SAPI5 sont installées
+## Personnalisation
 
-3. Si les requêtes API échouent :
-   - Vérifiez votre connexion Internet
-   - Vérifiez que la clé API OpenWeatherMap est valide
+### Thèmes visuels
 
-## Technologies utilisées
+Le fichier `static/css/styles.css` contient des variables CSS personnalisables :
 
-- Flask (Backend)
-- Web Speech API (Reconnaissance vocale)
-- pyttsx3 (Synthèse vocale)
-- OpenWeatherMap API (Météo)
-- Wikipedia API (Recherche d'informations)
+```css
+:root {
+  --copilot-primary: #8b4513; /* Couleur principale */
+  --copilot-accent: #daa520; /* Accent doré */
+  --copilot-purple: #4b0082; /* Accent violet */
+}
+```
+
+### Contexte biblique
+
+Le contexte du système peut être modifié dans `bible_chat.py` pour ajuster le style et la profondeur des réponses.
+
+## Ressources
+
+- [Documentation de l'API Gemini](https://ai.google.dev/docs)
+- [API Web Speech](https://developer.mozilla.org/fr/docs/Web/API/Web_Speech_API)
+- [Flask Documentation](https://flask.palletsprojects.com/)
+
+## Support
+
+Pour toute question ou problème :
+
+1. Vérifiez les problèmes connus dans l'onglet Issues
+2. Consultez la documentation ci-dessus
+3. Ouvrez une nouvelle issue avec une description détaillée
