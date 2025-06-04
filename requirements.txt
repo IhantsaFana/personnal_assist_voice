@@ -1,15 +1,32 @@
+# Web Framework et dépendances
 Flask==3.0.0
+Werkzeug==3.0.1
+Jinja2==3.1.6
+MarkupSafe==3.0.2
+itsdangerous==2.2.0
 python-dotenv==1.0.0
+click==8.2.1
+blinker==1.9.0
+
+# Serveur et WSGI
+gunicorn==21.2.0
+gevent==23.9.1
+
+# Reconnaissance vocale et synthèse
 SpeechRecognition==3.10.0
 pyttsx3==2.90
-requests==2.31.0
+PyAudio==0.2.14
+
+# API Gemini et dépendances
 google-generativeai==0.3.0
-gunicorn==21.2.0
-python-espeak==0.6.3
-gevent==23.9.1
-Werkzeug==3.0.1
-blinker==1.9.0
-cachetools==5.5.2
+google-ai-generativelanguage==0.4.0
+google-api-core==2.25.0
+google-auth==2.40.2
+googleapis-common-protos==1.70.0
+grpcio==1.72.1
+grpcio-status==1.62.3
+protobuf==4.25.8
+proto-plus==1.26.1
 certifi==2025.4.26
 charset-normalizer==3.4.2
 click==8.2.1
