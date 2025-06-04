@@ -1,9 +1,16 @@
 services:
   - type: web
-    name: assistant-vocal
-    env: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app
+    name: mon-app
+    runtime: python
+    plan: free
+    buildCommand: ./build.sh
+    startCommand: python main.py
     envVars:
-      - key: OPENWEATHER_API_KEY
-        value: "10f438bc6cd8d16a93dcbfbe9a1b5717"
+      - key: PYTHON_VERSION
+        value: 3.11
+    buildFilter:
+      paths:
+        - requirements.txt
+        - build.sh
+        - main.py
+    autoDeploy: true
