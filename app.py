@@ -9,8 +9,22 @@ app = Flask(__name__)
 # Charger les variables d'environnement
 load_dotenv()
 
+# Configuration pour la production
+app.config["DEBUG"] = False
+app.config["PROPAGATE_EXCEPTIONS"] = True
+
+
+@app.errorhandler(Exception)
+def handle_error(error):
+    app.logger.error(f"Unhandled error: {str(error)}")
+    return jsonify({"error": "Internal Server Error", "message": str(error)}), 500
+
+
 # Initialiser le chat
-chat = initialize_chat()
+try:
+    chat = initialize_chat()
+except Exception as e:
+    app.logger.error(f"Error initializing chat: {str(e)}")
 
 
 @app.route("/")

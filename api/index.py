@@ -14,19 +14,49 @@ from app import app
 app.static_folder = os.path.join(root_path, "static")
 app.template_folder = os.path.join(root_path, "templates")
 
+# Required for Vercel
+app.debug = False
 
-def handler(request):
+
+def create_app():
+    return app
+
+
+def handler(event, context):
     """
     Fonction handler pour Vercel serverless
     Cette fonction adapte les requêtes Vercel pour Flask
     """
-    with app.request_context(request):
-        try:
-            return app.full_dispatch_request()
-        except Exception as e:
-            app.logger.error(f"Error handling request: {e}")
-            return Response(
-                response='{"error": "Internal server error"}',
-                status=500,
-                mimetype="application/json",
-            )
+    if not event:
+        return {"statusCode": 500, "body": "No event data received"}
+
+    try:
+        # Create a Flask request context
+        with app.test_request_context(
+            path=event.get("path", "/"),
+            method=event.get("httpMethod", "GET"),
+            headers=event.get("headers", {}),
+            data=event.get("body", ""),
+            environ_base={"SERVER_NAME": "vercel"},
+        ):
+            try:
+                response = app.full_dispatch_request()
+                return {
+                    "statusCode": response.status_code,
+                    "body": response.get_data(as_text=True),
+                    "headers": dict(response.headers),
+                }
+            except Exception as e:
+                app.logger.error(f"Error processing request: {str(e)}")
+                return {
+                    "statusCode": 500,
+                    "body": str(e),
+                    "headers": {"Content-Type": "application/json"},
+                }
+    except Exception as e:
+        app.logger.error(f"Error setting up request context: {str(e)}")
+        return {
+            "statusCode": 500,
+            "body": str(e),
+            "headers": {"Content-Type": "application/json"},
+        }
