@@ -1,7 +1,4 @@
-import os
 from app import app
 
-if __name__ == "__main__":
-    # Render.com fournit le PORT via la variable d'environnement
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+# Vercel requires the app variable to be exposed
+app = app

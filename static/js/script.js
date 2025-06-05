@@ -25,18 +25,25 @@ document.addEventListener('DOMContentLoaded', function () {
     recognition.onstart = function () {
         statusElement.textContent = 'Écoute en cours... Parlez maintenant';
         speakButton.disabled = true;
+
+        // Ajouter la classe active pour l'animation
+        speakButton.classList.add('active');
     };
 
     // Événement lorsque la reconnaissance vocale s'arrête
     recognition.onend = function () {
         statusElement.textContent = 'Écoute terminée';
         speakButton.disabled = false;
+
+        // Retirer la classe active
+        speakButton.classList.remove('active');
     };
 
     // Événement lorsqu'une erreur se produit
     recognition.onerror = function (event) {
         statusElement.textContent = 'Erreur lors de la reconnaissance : ' + event.error;
         speakButton.disabled = false;
+        speakButton.classList.remove('active');
     };
 
     // Événement lorsqu'un résultat est disponible
@@ -45,39 +52,31 @@ document.addEventListener('DOMContentLoaded', function () {
         userCommandElement.textContent = transcript;
         statusElement.innerHTML = '<i class="fas fa-pray"></i><span>Je médite sur votre question...</span>';
 
-        // Envoyer la question au serveur Flask
-        fetch('/process_audio', {
+        // Envoyer la question au serveur via l'API Vercel
+        fetch('/api/process_audio', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({ text: transcript })
         })
             .then(response => response.json())
             .then(data => {
-                if (data.success) {
-                    assistantResponseElement.textContent = data.text;
-                } else {
-                    assistantResponseElement.textContent = "Je suis désolé, je n'ai pas pu comprendre votre question. Pouvez-vous la reformuler différemment?";
+                if (data.error) {
+                    throw new Error(data.error);
                 }
-                statusElement.innerHTML = '<i class="fas fa-bible"></i><span>Posez une question sur la Bible ou la foi chrétienne</span>';
+                assistantResponseElement.textContent = data.response;
+                statusElement.innerHTML = '<i class="fas fa-bible"></i><span>Réponse prête</span>';
             })
             .catch(error => {
-                console.error('Error:', error);
-                assistantResponseElement.textContent = "Une erreur s'est produite. Prions et réessayons.";
-                statusElement.innerHTML = '<i class="fas fa-bible"></i><span>Posez une question sur la Bible ou la foi chrétienne</span>';
+                console.error('Erreur:', error);
+                statusElement.innerHTML = '<i class="fas fa-exclamation-triangle"></i><span>Erreur: ' + error.message + '</span>';
+                assistantResponseElement.textContent = "Je suis désolé, j'ai rencontré une erreur. Pouvez-vous réessayer ?";
             });
-
     };
 
-    // Événement de clic sur le bouton Parler
+    // Gestionnaire de clic pour le bouton de parole
     speakButton.addEventListener('click', function () {
-        // Réinitialiser les champs
-        userCommandElement.textContent = '';
-        assistantResponseElement.textContent = '';
-
-        // Démarrer la reconnaissance vocale
         recognition.start();
     });
-
 });

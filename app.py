@@ -1,23 +1,16 @@
 from flask import Flask, render_template, request, jsonify
-import speech_recognition as sr
-import pyttsx3
 import os
 from dotenv import load_dotenv
 from bible_chat import initialize_chat, get_bible_response
 
+# Initialisation de Flask
 app = Flask(__name__)
 
-# Charger les variables d'environnement depuis le fichier .env
+# Charger les variables d'environnement
 load_dotenv()
 
 # Initialiser le chat
 chat = initialize_chat()
-
-
-@app.route("/health")
-def health_check():
-    """Route de vérification de santé pour Render.com"""
-    return jsonify({"status": "healthy", "service": "assistant-biblique"}), 200
 
 
 @app.route("/")
@@ -25,43 +18,7 @@ def index():
     return render_template("index.html")
 
 
-# Fonction pour faire parler l'assistant à partir d'un texte
-def speak(text):
-    try:
-        engine = pyttsx3.init("espeak")  # Utiliser espeak sur Linux
-        # Configuration de la voix en français
-        engine.setProperty("voice", "fr")
-        engine.setProperty("rate", 150)  # Vitesse un peu plus lente pour plus de clarté
-
-        # Prononciation du texte
-        print(f"Assistant: {text}")
-        engine.say(text)
-        engine.runAndWait()
-        return True
-    except Exception as e:
-        print(f"Erreur lors de la synthèse vocale: {e}")
-        return False
-
-
-# Fonction pour traiter les commandes textuelles
-def process_command(command):
-    if not isinstance(command, str):
-        return "Je suis désolé, je n'ai pas compris votre question. Pouvez-vous la reformuler ?"
-
-    command = command.strip()
-    if not command:
-        return "Je n'ai pas reçu de question. Pouvez-vous répéter s'il vous plaît ?"
-
-    try:
-        # Obtenir une réponse du chat biblique
-        response = get_bible_response(command, chat)
-        return response
-    except Exception as e:
-        print(f"Erreur lors du traitement de la commande: {e}")
-        return "Je suis désolé, j'ai rencontré une erreur. Pouvez-vous reformuler votre question ?"
-
-
-@app.route("/process_audio", methods=["POST"])
+@app.route("/api/process_audio", methods=["POST"])
 def process_audio():
     try:
         if not request.is_json:
@@ -82,16 +39,20 @@ def process_audio():
                 400,
             )
 
-        # Traiter la commande
-        response = process_command(text)
-        # Synthèse vocale de la réponse
-        speak_success = speak(response)
+        # Obtenir une réponse du chat biblique
+        response = get_bible_response(text, chat)
 
-        return jsonify({"response": response, "voice_output": speak_success})
+        return jsonify({"response": response, "success": True})
 
     except Exception as e:
         print(f"Erreur serveur: {e}")
         return jsonify({"error": "Erreur serveur interne"}), 500
+
+
+# Point de terminaison pour vérifier l'état de l'API
+@app.route("/api/health")
+def health_check():
+    return jsonify({"status": "healthy", "service": "assistant-biblique"})  # , 200
 
 
 if __name__ == "__main__":
