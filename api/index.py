@@ -1,13 +1,18 @@
-from flask import Flask, request, Response
+from flask import Flask, request, Response, send_from_directory
 import sys
 import os
 from pathlib import Path
 
-# Ajouter le répertoire parent au PYTHONPATH
+# Add parent directory to PYTHONPATH
 root_path = str(Path(__file__).parent.parent.absolute())
 sys.path.append(root_path)
 
+# Import the Flask app
 from app import app
+
+# Configure static and template folders
+app.static_folder = os.path.join(root_path, "static")
+app.template_folder = os.path.join(root_path, "templates")
 
 
 def handler(request):
