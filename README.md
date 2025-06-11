@@ -138,22 +138,6 @@ assistant-vocal-biblique/
 - **Tests** : pytest
 - **CI/CD** : GitHub Actions
 
-## 🎨 Personnalisation
-
-### Thèmes
-Le fichier `static/css/styles.css` contient des variables CSS personnalisables :
-
-```css
-:root {
-  --copilot-primary: #8b4513;  /* Couleur principale */
-  --copilot-accent: #daa520;   /* Accent doré */
-  --copilot-purple: #4b0082;   /* Accent violet */
-}
-```
-
-### Configuration du Contexte
-Le contexte biblique peut être ajusté dans `bible_chat.py`.
-
 ## 📖 Ressources
 
 - [Documentation API Gemini](https://ai.google.dev/docs)
