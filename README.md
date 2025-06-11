@@ -6,6 +6,8 @@ Un assistant vocal intelligent spécialisé dans l'enseignement de la Bible et l
 ![Version Python](https://img.shields.io/badge/python-%3E%3D3.8-blue)
 ![Licence](https://img.shields.io/badge/license-MIT-green)
 
+<img src="Messenger_creation_F270C9DC-51A3-48DB-A27F-7AAA0A842BFC.jpeg" alt="Capture d'écran" />
+
 ## 🌟 Caractéristiques
 
 - 🎤 Interface vocale en français avec reconnaissance naturelle
