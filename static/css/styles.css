@@ -3,17 +3,19 @@
   padding: 0;
   box-sizing: border-box;
 }
+
 :root {
-  --copilot-primary: #8b4513; /* Warm brown for spiritual/biblical theme */
+  --copilot-primary: #8b4513;
+  /* Warm brown for spiritual/biblical theme */
   --copilot-secondary: #cd853f;
-  --copilot-accent: #daa520; /* Golden accent for divine inspiration */
-  --copilot-purple: #4b0082; /* Deep purple for wisdom */
-  --copilot-gradient: linear-gradient(
-    135deg,
-    #8b4513 0%,
-    #daa520 50%,
-    #4b0082 100%
-  );
+  --copilot-accent: #daa520;
+  /* Golden accent for divine inspiration */
+  --copilot-purple: #4b0082;
+  /* Deep purple for wisdom */
+  --copilot-gradient: linear-gradient(135deg,
+      #8b4513 0%,
+      #daa520 50%,
+      #4b0082 100%);
   --copilot-dark: #1e1e1e;
   --copilot-surface: #ffffff;
   --copilot-surface-alt: #f8f9fa;
@@ -26,11 +28,25 @@
   --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.1);
   --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.12);
   --shadow-strong: 0 8px 32px rgba(0, 0, 0, 0.15);
+  /* Nouvelles variables pour l'accessibilité */
+  --focus-outline: 3px solid var(--copilot-accent);
+  --focus-ring-offset: 2px;
+  --text-scale-ratio: 1.2;
+  --font-size-base: 1rem;
+  --line-height-base: 1.5;
+  /* Variables pour le responsive design */
+  --container-width-desktop: 640px;
+  --container-width-tablet: 90%;
+  --container-width-mobile: 95%;
+  --spacing-unit: 1rem;
 }
+
 body {
   font-family: "Crimson Text", "Segoe UI", -apple-system, BlinkMacSystemFont,
-    system-ui, serif; /* Serif font for biblical feel */
-  background: #f5f5dc; /* Beige background for parchment-like feel */
+    system-ui, serif;
+  /* Serif font for biblical feel */
+  background: #f5f5dc;
+  /* Beige background for parchment-like feel */
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -41,6 +57,7 @@ body {
   background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 50L50 0L0 0L0 100L100 100L100 0L50 0' fill='none' stroke='%23DAA520' stroke-width='0.2'/%3E%3C/svg%3E");
   background-size: 20px 20px;
 }
+
 .background-pattern {
   position: fixed;
   top: 0;
@@ -48,22 +65,17 @@ body {
   width: 100%;
   height: 100%;
   z-index: -2;
-  background: radial-gradient(
-      circle at 20% 50%,
+  background: radial-gradient(circle at 20% 50%,
       rgba(0, 120, 212, 0.1) 0%,
-      transparent 50%
-    ),
-    radial-gradient(
-      circle at 80% 20%,
+      transparent 50%),
+    radial-gradient(circle at 80% 20%,
       rgba(64, 224, 208, 0.1) 0%,
-      transparent 50%
-    ),
-    radial-gradient(
-      circle at 40% 80%,
+      transparent 50%),
+    radial-gradient(circle at 40% 80%,
       rgba(139, 92, 246, 0.1) 0%,
-      transparent 50%
-    );
+      transparent 50%);
 }
+
 .floating-shapes {
   position: fixed;
   top: 0;
@@ -73,17 +85,20 @@ body {
   pointer-events: none;
   z-index: -1;
 }
+
 .shape {
   position: absolute;
   opacity: 0.6;
   animation: float-copilot 8s infinite ease-in-out;
 }
+
 .shape-circle {
   width: 60px;
   height: 60px;
   border-radius: 50%;
   background: var(--copilot-gradient);
 }
+
 .shape-triangle {
   width: 0;
   height: 0;
@@ -91,6 +106,7 @@ body {
   border-right: 30px solid transparent;
   border-bottom: 50px solid var(--copilot-accent);
 }
+
 .shape-square {
   width: 40px;
   height: 40px;
@@ -98,18 +114,23 @@ body {
   border-radius: 8px;
   transform: rotate(45deg);
 }
+
 @keyframes float-copilot {
+
   0%,
   100% {
     transform: translateY(0px) rotate(0deg);
   }
+
   33% {
     transform: translateY(-20px) rotate(120deg);
   }
+
   66% {
     transform: translateY(10px) rotate(240deg);
   }
 }
+
 .app-container {
   background: var(--copilot-surface);
   border-radius: 20px;
@@ -121,6 +142,7 @@ body {
   position: relative;
   overflow: hidden;
 }
+
 .app-container::before {
   content: "";
   position: absolute;
@@ -130,10 +152,12 @@ body {
   height: 4px;
   background: var(--copilot-gradient);
 }
+
 .header {
   text-align: center;
   margin-bottom: 40px;
 }
+
 .copilot-logo {
   width: 80px;
   height: 80px;
@@ -148,15 +172,19 @@ body {
   box-shadow: var(--shadow-medium);
   animation: divine-glow 3s infinite alternate;
 }
+
 @keyframes logo-glow {
+
   0%,
   100% {
     box-shadow: var(--shadow-medium);
   }
+
   50% {
     box-shadow: 0 8px 32px rgba(0, 120, 212, 0.4);
   }
 }
+
 .app-title {
   font-size: 2rem;
   font-weight: 600;
@@ -164,21 +192,25 @@ body {
   margin-bottom: 8px;
   letter-spacing: -0.02em;
 }
+
 .app-subtitle {
   color: var(--copilot-text-secondary);
   font-size: 1rem;
   font-weight: 400;
 }
+
 .voice-section {
   text-align: center;
   margin-bottom: 40px;
   position: relative;
 }
+
 .mic-container {
   position: relative;
   display: inline-block;
   margin-bottom: 24px;
 }
+
 .speak-button {
   width: 120px;
   height: 120px;
@@ -196,21 +228,25 @@ body {
   justify-content: center;
   position: relative;
 }
+
 .speak-button:hover {
   background: var(--copilot-primary);
   color: white;
   transform: translateY(-2px);
   box-shadow: var(--shadow-strong);
 }
+
 .speak-button:active {
   transform: translateY(0);
 }
+
 .speak-button.listening {
   background: var(--copilot-gradient);
   border-color: transparent;
   color: white;
   animation: copilot-pulse 2s infinite;
 }
+
 .speak-button:disabled {
   background: var(--copilot-surface-alt);
   border-color: var(--copilot-border);
@@ -218,21 +254,26 @@ body {
   cursor: not-allowed;
   transform: none;
 }
+
 @keyframes copilot-pulse {
+
   0%,
   100% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.05);
   }
 }
+
 .pulse-rings {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
 }
+
 .pulse-ring {
   position: absolute;
   width: 120px;
@@ -245,22 +286,27 @@ body {
   transform: translate(-50%, -50%);
   animation: copilot-ring 2s infinite;
 }
+
 .pulse-ring:nth-child(2) {
   animation-delay: 0.5s;
 }
+
 .pulse-ring:nth-child(3) {
   animation-delay: 1s;
 }
+
 @keyframes copilot-ring {
   0% {
     transform: translate(-50%, -50%) scale(1);
     opacity: 0.7;
   }
+
   100% {
     transform: translate(-50%, -50%) scale(2);
     opacity: 0;
   }
 }
+
 .status-indicator {
   display: flex;
   align-items: center;
@@ -276,26 +322,35 @@ body {
   color: var(--copilot-primary);
   transition: all 0.3s ease;
 }
+
 .status-indicator.listening {
   background: rgba(16, 124, 16, 0.1);
   border-color: var(--copilot-success);
   color: var(--copilot-success);
 }
+
 .status-indicator.processing {
   background: rgba(247, 99, 12, 0.1);
   border-color: var(--copilot-warning);
   color: var(--copilot-warning);
 }
+
 .status-indicator.error {
   background: rgba(209, 52, 56, 0.1);
   border-color: var(--copilot-error);
   color: var(--copilot-error);
+  /* Improved contrast for better readability */
+  color: var(--copilot-text);
+  background: var(--copilot-surface);
+  border: 2px solid currentColor;
 }
+
 .conversation-area {
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
+
 .message-bubble {
   border-radius: 16px;
   padding: 20px;
@@ -306,21 +361,22 @@ body {
   border: 2px solid var(--copilot-accent);
   background-color: rgba(255, 255, 255, 0.95);
 }
+
 .message-bubble.show {
   opacity: 1;
   transform: translateY(0);
 }
+
 .user-bubble {
-  background: linear-gradient(
-    135deg,
-    var(--copilot-primary),
-    var(--copilot-secondary)
-  );
+  background: linear-gradient(135deg,
+      var(--copilot-primary),
+      var(--copilot-secondary));
   color: white;
   margin-left: 40px;
   position: relative;
   border: 2px solid var(--copilot-accent);
 }
+
 .user-bubble::before {
   content: "";
   position: absolute;
@@ -332,6 +388,7 @@ body {
   border-bottom: 10px solid transparent;
   border-right: 10px solid var(--copilot-primary);
 }
+
 .assistant-bubble {
   background: linear-gradient(135deg, #f5f5dc, #fff);
   color: var(--copilot-text);
@@ -339,6 +396,7 @@ body {
   position: relative;
   border: 2px solid var(--copilot-accent);
 }
+
 .assistant-bubble::before {
   content: "";
   position: absolute;
@@ -350,6 +408,7 @@ body {
   border-bottom: 10px solid transparent;
   border-left: 10px solid var(--copilot-surface);
 }
+
 .message-header {
   display: flex;
   align-items: center;
@@ -359,6 +418,7 @@ body {
   font-size: 0.9rem;
   opacity: 0.8;
 }
+
 .message-avatar {
   width: 24px;
   height: 24px;
@@ -368,23 +428,28 @@ body {
   justify-content: center;
   font-size: 0.8rem;
 }
+
 .user-avatar {
   background: rgba(255, 255, 255, 0.2);
 }
+
 .assistant-avatar {
   background: var(--copilot-gradient);
   color: white;
 }
+
 .message-content {
   font-size: 1rem;
   line-height: 1.5;
   min-height: 24px;
 }
+
 .thinking-animation {
   display: inline-flex;
   gap: 4px;
   align-items: center;
 }
+
 .thinking-dot {
   width: 6px;
   height: 6px;
@@ -392,53 +457,189 @@ body {
   background: var(--copilot-primary);
   animation: thinking 1.4s infinite ease-in-out;
 }
+
 .thinking-dot:nth-child(1) {
   animation-delay: 0s;
 }
+
 .thinking-dot:nth-child(2) {
   animation-delay: 0.2s;
 }
+
 .thinking-dot:nth-child(3) {
   animation-delay: 0.4s;
 }
+
 @keyframes thinking {
+
   0%,
   60%,
   100% {
     transform: scale(1);
     opacity: 0.5;
   }
+
   30% {
     transform: scale(1.3);
     opacity: 1;
   }
 }
+
 .copilot-sparkle {
   position: absolute;
   color: var(--copilot-accent);
   font-size: 1.2rem;
   animation: sparkle 2s infinite ease-in-out;
 }
+
 @keyframes sparkle {
+
   0%,
   100% {
     opacity: 0;
     transform: scale(0.5) rotate(0deg);
   }
+
   50% {
     opacity: 1;
     transform: scale(1) rotate(180deg);
   }
 }
+
 @keyframes divine-glow {
+
   0%,
   100% {
     box-shadow: 0 0 15px var(--copilot-accent);
   }
+
   50% {
     box-shadow: 0 0 30px var(--copilot-accent);
   }
 }
+
+/* Focus styles améliorés pour l'accessibilité */
+*:focus {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* Skip to content link for keyboard users */
+.skip-to-content {
+  position: absolute;
+  top: -100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--copilot-surface);
+  padding: 1rem;
+  border: 2px solid var(--copilot-accent);
+  border-radius: 4px;
+  z-index: 1000;
+  transition: top 0.3s;
+}
+
+.skip-to-content:focus {
+  top: 0;
+}
+
+/* Responsive typography */
+html {
+  font-size: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
+@media (max-width: 768px) {
+  html {
+    font-size: 95%;
+  }
+}
+
+@media (max-width: 480px) {
+  html {
+    font-size: 90%;
+  }
+}
+
+/* Improved mobile responsiveness */
+@media (max-width: 480px) {
+  .app-container {
+    padding: var(--spacing-unit);
+    width: var(--container-width-mobile);
+    margin: var(--spacing-unit);
+  }
+
+  .conversation-area {
+    gap: calc(var(--spacing-unit) * 0.75);
+  }
+
+  .message-bubble {
+    padding: calc(var(--spacing-unit) * 0.75);
+    margin-left: calc(var(--spacing-unit) * 0.5);
+    margin-right: calc(var(--spacing-unit) * 0.5);
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --copilot-primary: #000000;
+    --copilot-accent: #ffffff;
+    --copilot-text: #000000;
+    --copilot-surface: #ffffff;
+  }
+
+  .message-bubble {
+    border: 2px solid currentColor;
+  }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Improved touch targets for mobile */
+button,
+.speak-button {
+  min-height: 44px;
+  min-width: 44px;
+  padding: calc(var(--spacing-unit) * 0.5);
+}
+
+/* Loading indicators */
+.loading {
+  position: relative;
+  pointer-events: none;
+}
+
+.loading::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+}
+
+.loading::before {
+  content: "Chargement...";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+}
+
 @media (max-width: 640px) {
   .app-container {
     padding: 24px;

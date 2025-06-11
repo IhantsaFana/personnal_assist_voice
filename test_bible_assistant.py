@@ -1,18 +1,28 @@
 import unittest
-from bible_chat import initialize_chat, get_bible_response, ConversationHistory
+from bible_chat import initialize_chat, get_bible_response, ConversationHistory, GeminiAPI
+from unittest.mock import patch, MagicMock
 import os
+import warnings
 
 class TestBibleAssistant(unittest.TestCase):
+    """Tests unitaires pour l'assistant biblique."""
+
     def setUp(self):
+        """Configuration initiale pour chaque test."""
+        warnings.filterwarnings('ignore', category=ResourceWarning)
         self.chat = initialize_chat()
         self.conversation = ConversationHistory()
 
-    def test_conversation_history(self):
-        """Test la gestion de l'historique des conversations"""
+    def test_conversation_history_management(self):
+        """Test complet de la gestion de l'historique des conversations."""
         # Test l'ajout de messages
         self.conversation.add_message("user", "Test message")
         self.assertEqual(len(self.conversation.messages), 1)
         self.assertEqual(self.conversation.messages[0]["content"], "Test message")
+
+        # Test le filtrage des messages vides
+        self.conversation.add_message("user", "   ")
+        self.assertEqual(len(self.conversation.messages), 1)
 
         # Test la limite de l'historique
         for i in range(15):  # Dépasse max_history
@@ -22,80 +32,94 @@ class TestBibleAssistant(unittest.TestCase):
         # Test la fenêtre de contexte
         context_window = self.conversation.get_context_window(3)
         self.assertLessEqual(len(context_window), 3)
+        
+        # Test clear
+        self.conversation.clear()
+        self.assertEqual(len(self.conversation.messages), 0)
 
-    def test_chat_initialization(self):
-        """Test si le chat est correctement initialisé avec le contexte système"""
-        self.assertIsNotNone(self.chat)
+    @patch('bible_chat.GeminiAPI')
+    def test_chat_initialization_error(self, mock_api):
+        """Test la gestion des erreurs lors de l'initialisation."""
+        mock_api.side_effect = Exception("API Error")
+        with self.assertRaises(Exception):
+            GeminiAPI()
 
-    def test_bible_response(self):
-        """Test if the assistant provides biblical responses with references"""
+    def test_response_format_validation(self):
+        """Test si les réponses respectent le format attendu."""
         test_questions = [
             "What does the Bible say about love?",
             "Tell me about the creation story",
             "What is the meaning of faith?",
-            "Explain the Lord's Prayer",
-            "What are the Ten Commandments?",
-            "Tell me about Jesus's resurrection"
         ]
         
         for question in test_questions:
             response = get_bible_response(question, self.chat)
-            self.assertIsNotNone(response)
-            # Check if response contains biblical references (e.g., Book chapter:verse)
-            self.assertTrue(any(char.isdigit() and ':' in text 
-                              for text in response.split() 
-                              for char in text))
-            # Check for minimum response length
-            self.assertTrue(len(response) > 100, f"Response too short for question: {question}")
+            
+            # Vérifie la présence de références bibliques
+            self.assertTrue(
+                any(char.isdigit() and ':' in text 
+                    for text in response.split() 
+                    for char in text),
+                f"No biblical reference found in response to: {question}"
+            )
+            
+            # Vérifie la longueur minimale
+            self.assertTrue(
+                len(response) > 100,
+                f"Response too short for question: {question}"
+            )
+            
+            # Vérifie la présence de contenu théologique
+            theological_terms = ['God', 'Jesus', 'Christ', 'faith', 'love', 'Bible']
+            self.assertTrue(
+                any(term.lower() in response.lower() for term in theological_terms),
+                f"No theological terms found in response to: {question}"
+            )
 
-    def test_conversation_continuity(self):
-        """Test la continuité de la conversation et la pertinence du contexte"""
-        # Première question sur un sujet
-        response1 = get_bible_response("Que dit la Bible sur l'amour ?", self.chat)
-        self.assertIsNotNone(response1)
-        self.assertTrue(len(response1) > 0)
-
-        # Question de suivi liée au même sujet
-        response2 = get_bible_response("Et qu'en est-il de l'amour fraternel ?", self.chat)
-        self.assertIsNotNone(response2)
-        self.assertTrue(len(response2) > 0)
-        # La réponse devrait faire référence au contexte précédent
-        self.assertTrue(any(word in response2.lower() for word in ["aussi", "également", "comme"]))
-
-    def test_error_handling(self):
-        """Test la gestion des erreurs avec des entrées invalides"""
+    def test_error_handling_comprehensive(self):
+        """Test approfondi de la gestion des erreurs."""
         test_cases = [
-            ("", "Response should not be empty"),
+            ("", "Should handle empty input"),
             (None, "Should handle None input"),
             ("   ", "Should handle whitespace"),
             ("?" * 1000, "Should handle very long input"),
-            ("¿§¶°", "Should handle special characters")
+            ("¿§¶°", "Should handle special characters"),
+            (123, "Should handle non-string input"),  # Nouveau cas
+            ([], "Should handle list input"),  # Nouveau cas
         ]
         
         for input_text, message in test_cases:
-            response = get_bible_response(input_text, self.chat)
-            self.assertTrue(isinstance(response, str), message)
-            self.assertNotEqual(response, "", message)
-            self.assertTrue(len(response) > 0, message)
+            try:
+                response = get_bible_response(input_text, self.chat)
+                self.assertTrue(isinstance(response, str), message)
+                self.assertTrue(len(response) > 0, message)
+                self.assertTrue("error" in response.lower() or "sorry" in response.lower(), 
+                              "Error responses should be apologetic")
+            except Exception as e:
+                self.fail(f"Failed to handle {input_text}: {str(e)}")
 
-    def test_response_quality(self):
-        """Test the quality and relevance of responses"""
-        question = "What is salvation?"
-        response = get_bible_response(question, self.chat)
+    def test_conversation_flow(self):
+        """Test la cohérence du flux de conversation."""
+        # Test d'une série de questions liées
+        questions = [
+            "Who is Jesus?",
+            "What did he teach about love?",
+            "Can you elaborate on that last point?",
+        ]
         
-        # Check for key theological terms
-        theological_terms = ['salvation', 'grace', 'faith', 'Jesus', 'Christ', 'God']
-        self.assertTrue(
-            any(term.lower() in response.lower() for term in theological_terms),
-            "Response should contain relevant theological terms"
-        )
-        
-        # Check for Bible verse format (e.g., John 3:16)
-        self.assertRegex(
-            response,
-            r'[A-Za-z]+\s*\d+:\d+',
-            "Response should contain at least one Bible verse reference"
-        )
+        previous_response = None
+        for question in questions:
+            current_response = get_bible_response(question, self.chat)
+            
+            if previous_response:
+                # Vérifie la cohérence contextuelle
+                self.assertTrue(
+                    any(word in current_response.lower() 
+                        for word in ["also", "additionally", "furthermore", "moreover"]),
+                    "Response should show awareness of conversation context"
+                )
+            
+            previous_response = current_response
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,82 +1,223 @@
-document.addEventListener('DOMContentLoaded', function () {
-    // Éléments DOM
-    const speakButton = document.getElementById('speakButton');
-    const statusElement = document.getElementById('statusIndicator');
-    const userCommandElement = document.getElementById('userCommand');
-    const assistantResponseElement = document.getElementById('assistantResponse');
+/**
+ * Assistant Vocal Biblique - Script principal
+ * Gère la reconnaissance vocale et l'interaction avec l'API
+ */
 
-    // Vérifier si la reconnaissance vocale est supportée par le navigateur
-    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-        statusElement.textContent = 'La reconnaissance vocale n\'est pas supportée par votre navigateur.';
-        speakButton.disabled = true;
-        return;
+class VoiceAssistant {
+    constructor() {
+        this.initializeElements();
+        this.initializeSpeechRecognition();
+        this.setupEventListeners();
     }
 
-    // Initialiser l'objet de reconnaissance vocale
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const recognition = new SpeechRecognition();
+    /**
+     * Initialise les références aux éléments DOM
+     * @private
+     */
+    initializeElements() {
+        this.elements = {
+            speakButton: document.getElementById('speakButton'),
+            statusElement: document.getElementById('statusIndicator'),
+            userCommandElement: document.getElementById('userCommand'),
+            assistantResponseElement: document.getElementById('assistantResponse')
+        };
 
-    // Configuration de la reconnaissance vocale
-    recognition.lang = 'fr-FR';
-    recognition.continuous = false;
-    recognition.interimResults = false;
+        if (!this.validateElements()) {
+            throw new Error('Required DOM elements not found');
+        }
+    }
 
-    // Événement lorsque la reconnaissance vocale démarre
-    recognition.onstart = function () {
-        statusElement.textContent = 'Écoute en cours... Parlez maintenant';
-        speakButton.disabled = true;
+    /**
+     * Valide que tous les éléments nécessaires sont présents
+     * @private
+     * @returns {boolean}
+     */
+    validateElements() {
+        return Object.values(this.elements).every(element => element !== null);
+    }
 
-        // Ajouter la classe active pour l'animation
-        speakButton.classList.add('active');
-    };
+    /**
+     * Initialise la reconnaissance vocale
+     * @private
+     */
+    initializeSpeechRecognition() {
+        if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+            this.handleError('La reconnaissance vocale n\'est pas supportée par votre navigateur.');
+            this.elements.speakButton.disabled = true;
+            return;
+        }
 
-    // Événement lorsque la reconnaissance vocale s'arrête
-    recognition.onend = function () {
-        statusElement.textContent = 'Écoute terminée';
-        speakButton.disabled = false;
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        this.recognition = new SpeechRecognition();
+        this.configureRecognition();
+    }
 
-        // Retirer la classe active
-        speakButton.classList.remove('active');
-    };
+    /**
+     * Configure les paramètres de la reconnaissance vocale
+     * @private
+     */
+    configureRecognition() {
+        this.recognition.lang = 'fr-FR';
+        this.recognition.continuous = false;
+        this.recognition.interimResults = false;
 
-    // Événement lorsqu'une erreur se produit
-    recognition.onerror = function (event) {
-        statusElement.textContent = 'Erreur lors de la reconnaissance : ' + event.error;
-        speakButton.disabled = false;
-        speakButton.classList.remove('active');
-    };
+        this.recognition.onstart = () => this.handleRecognitionStart();
+        this.recognition.onend = () => this.handleRecognitionEnd();
+        this.recognition.onerror = (event) => this.handleRecognitionError(event);
+        this.recognition.onresult = (event) => this.handleRecognitionResult(event);
+    }
 
-    // Événement lorsqu'un résultat est disponible
-    recognition.onresult = function (event) {
+    /**
+     * Configure les écouteurs d'événements
+     * @private
+     */
+    setupEventListeners() {
+        this.elements.speakButton.addEventListener('click', () => this.toggleRecognition());
+    }
+
+    /**
+     * Démarre ou arrête la reconnaissance vocale
+     * @private
+     */
+    toggleRecognition() {
+        if (this.elements.speakButton.classList.contains('listening')) {
+            this.recognition.stop();
+        } else {
+            this.clearMessages();
+            this.recognition.start();
+        }
+    }
+
+    /**
+     * Gère le début de la reconnaissance
+     * @private
+     */
+    handleRecognitionStart() {
+        this.updateStatus('listening', 'fas fa-microphone-alt', 'Écoute en cours...');
+        this.elements.speakButton.classList.add('active', 'listening');
+        this.elements.speakButton.disabled = true;
+    }
+
+    /**
+     * Gère la fin de la reconnaissance
+     * @private
+     */
+    handleRecognitionEnd() {
+        this.updateStatus('ready', 'fas fa-microphone', 'Prêt à écouter');
+        this.elements.speakButton.classList.remove('active', 'listening');
+        this.elements.speakButton.disabled = false;
+    }
+
+    /**
+     * Gère les erreurs de reconnaissance
+     * @private
+     * @param {SpeechRecognitionErrorEvent} event 
+     */
+    handleRecognitionError(event) {
+        this.handleError(`Erreur de reconnaissance : ${event.error}`);
+        this.elements.speakButton.classList.remove('active', 'listening');
+        this.elements.speakButton.disabled = false;
+    }
+
+    /**
+     * Gère les résultats de la reconnaissance
+     * @private
+     * @param {SpeechRecognitionEvent} event 
+     */
+    handleRecognitionResult(event) {
         const transcript = event.results[0][0].transcript;
-        userCommandElement.textContent = transcript;
-        statusElement.innerHTML = '<i class="fas fa-pray"></i><span>Je médite sur votre question...</span>';
+        this.elements.userCommandElement.textContent = transcript;
+        this.updateStatus('processing', 'fas fa-cog fa-spin', 'Traitement en cours...');
+        this.sendToAPI(transcript);
+    }
 
-        // Envoyer la question au serveur via l'API Vercel
-        fetch('/api/process_audio', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ text: transcript })
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    throw new Error(data.error);
-                }
-                assistantResponseElement.textContent = data.response;
-                statusElement.innerHTML = '<i class="fas fa-bible"></i><span>Réponse prête</span>';
-            })
-            .catch(error => {
-                console.error('Erreur:', error);
-                statusElement.innerHTML = '<i class="fas fa-exclamation-triangle"></i><span>Erreur: ' + error.message + '</span>';
-                assistantResponseElement.textContent = "Je suis désolé, j'ai rencontré une erreur. Pouvez-vous réessayer ?";
+    /**
+     * Envoie la transcription à l'API
+     * @private
+     * @param {string} text 
+     */
+    async sendToAPI(text) {
+        try {
+            const response = await fetch('/api/process_audio', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ text })
             });
-    };
 
-    // Gestionnaire de clic pour le bouton de parole
-    speakButton.addEventListener('click', function () {
-        recognition.start();
-    });
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Erreur serveur');
+            }
+
+            this.handleAPIResponse(data);
+        } catch (error) {
+            this.handleError(`Erreur de communication : ${error.message}`);
+        }
+    }
+
+    /**
+     * Gère la réponse de l'API
+     * @private
+     * @param {Object} data 
+     */
+    handleAPIResponse(data) {
+        if (data.error) {
+            this.handleError(data.error);
+            return;
+        }
+
+        this.elements.assistantResponseElement.textContent = data.response;
+        this.updateStatus('success', 'fas fa-check-circle', 'Réponse prête');
+
+        if (data.redirect) {
+            setTimeout(() => window.open(data.redirect, '_blank'), 1000);
+        }
+    }
+
+    /**
+     * Met à jour l'indicateur de statut
+     * @private
+     * @param {string} className 
+     * @param {string} iconClass 
+     * @param {string} message 
+     */
+    updateStatus(className, iconClass, message) {
+        this.elements.statusElement.className = `status-indicator ${className}`;
+        this.elements.statusElement.innerHTML = `<i class="${iconClass}"></i><span>${message}</span>`;
+    }
+
+    /**
+     * Gère les erreurs
+     * @private
+     * @param {string} message 
+     */
+    handleError(message) {
+        console.error(message);
+        this.updateStatus('error', 'fas fa-exclamation-triangle', message);
+        this.elements.assistantResponseElement.textContent =
+            "Je suis désolé, j'ai rencontré une erreur. Pouvez-vous réessayer ?";
+    }
+
+    /**
+     * Efface les messages
+     * @private
+     */
+    clearMessages() {
+        this.elements.userCommandElement.textContent = '';
+        this.elements.assistantResponseElement.textContent = '';
+    }
+}
+
+// Initialisation quand le DOM est chargé
+document.addEventListener('DOMContentLoaded', () => {
+    try {
+        window.voiceAssistant = new VoiceAssistant();
+    } catch (error) {
+        console.error('Erreur d\'initialisation:', error);
+        document.getElementById('statusIndicator').innerHTML =
+            '<i class="fas fa-exclamation-triangle"></i><span>Erreur d\'initialisation de l\'assistant</span>';
+    }
 });

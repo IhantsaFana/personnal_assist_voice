@@ -1,60 +1,125 @@
 import google.generativeai as genai
 import os
 from dotenv import load_dotenv
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Any
 import json
 from unittest.mock import MagicMock
+from logging import getLogger
+
+# Configure logging
+logger = getLogger(__name__)
 
 load_dotenv()
 
 class GeminiAPI:
+    """
+    Interface avec l'API Gemini pour la génération de réponses bibliques.
+    
+    Cette classe gère la communication avec l'API Gemini, y compris l'initialisation,
+    la gestion des erreurs et le mode mock pour les tests.
+    """
+    
     def __init__(self):
+        """Initialise l'API Gemini avec la clé d'API depuis les variables d'environnement."""
         self.api_key = os.getenv('GEMINI_API_KEY')
         if not self.api_key:
+            logger.error("API key not found")
             raise ValueError("API key not found. Please set GEMINI_API_KEY in .env file")
         
-        genai.configure(api_key=self.api_key)
-        self._model = None
-        self.is_mock = False
+        try:
+            genai.configure(api_key=self.api_key)
+            self._model = None
+            self.is_mock = False
+        except Exception as e:
+            logger.error(f"Failed to configure Gemini API: {str(e)}")
+            raise RuntimeError(f"Failed to configure Gemini API: {str(e)}")
 
     @property
-    def model(self):
+    def model(self) -> Any:
+        """
+        Initialise et retourne le modèle Gemini.
+        
+        Returns:
+            Any: Instance du modèle Gemini ou un mock pour les tests
+            
+        Raises:
+            RuntimeError: Si l'initialisation du modèle échoue
+        """
         if self._model is None:
             try:
                 self._model = genai.GenerativeModel('gemini-pro')
             except Exception as e:
-                print(f"Error initializing Gemini model: {str(e)}")
-                # Pour les tests, utiliser un mock si l'API n'est pas disponible
-                self._model = MagicMock()
-                self._model.start_chat.return_value = MagicMock()
-                self._model.start_chat.return_value.send_message.return_value = MagicMock(
-                    text="[TEST] Ceci est une réponse de test. (Jean 3:16)"
-                )
+                logger.warning(f"Using mock model due to initialization error: {str(e)}")
+                self._model = self._create_mock_model()
                 self.is_mock = True
         return self._model
+
+    def _create_mock_model(self) -> MagicMock:
+        """Crée un mock du modèle pour les tests."""
+        mock = MagicMock()
+        mock.start_chat.return_value = MagicMock()
+        mock.start_chat.return_value.send_message.return_value = MagicMock(
+            text="[TEST] Voici une réponse biblique de test. (Jean 3:16)"
+        )
+        return mock
 
 # Instance globale de l'API
 gemini_api = GeminiAPI()
 
 class ConversationHistory:
+    """
+    Gère l'historique des conversations avec une fenêtre glissante.
+    
+    Attributes:
+        max_history (int): Nombre maximum de messages à conserver
+        messages (List[Dict[str, str]]): Liste des messages de l'historique
+    """
+    
     def __init__(self, max_history: int = 10):
+        """
+        Initialise l'historique des conversations.
+        
+        Args:
+            max_history: Nombre maximum de messages à conserver
+        """
         self.messages: List[Dict[str, str]] = []
         self.max_history = max_history
 
-    def add_message(self, role: str, content: str):
-        """Ajouter un message à l'historique"""
+    def add_message(self, role: str, content: str) -> None:
+        """
+        Ajoute un message à l'historique.
+        
+        Args:
+            role: Rôle de l'émetteur ('user', 'system', 'assistant')
+            content: Contenu du message
+            
+        Note:
+            Les messages les plus anciens sont supprimés si max_history est dépassé
+        """
+        if not content.strip():
+            logger.warning("Attempted to add empty message")
+            return
+            
         self.messages.append({"role": role, "content": content})
-        # Garder seulement les derniers messages si on dépasse max_history
         if len(self.messages) > self.max_history:
             self.messages = self.messages[-self.max_history:]
 
     def get_context_window(self, window_size: int = 5) -> List[Dict[str, str]]:
-        """Obtenir les derniers messages pour le contexte"""
-        return self.messages[-window_size:] if len(self.messages) > window_size else self.messages
+        """
+        Obtient la fenêtre de contexte des derniers messages.
+        
+        Args:
+            window_size: Nombre de messages à inclure dans la fenêtre
+            
+        Returns:
+            Liste des derniers messages dans la limite de window_size
+        """
+        return self.messages[-window_size:] if self.messages else []
 
-    def clear(self):
-        """Effacer l'historique"""
+    def clear(self) -> None:
+        """Efface l'historique des conversations."""
         self.messages = []
+        logger.info("Conversation history cleared")
 
 # Contexte initial pour orienter le modèle vers la théologie
 SYSTEM_CONTEXT = """Tu es un expert en théologie chrétienne et en études bibliques, avec une profonde connaissance de la Bible, de son histoire et de son interprétation.
